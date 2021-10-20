@@ -2,45 +2,34 @@
 import json
 import requests
 
-#funktionen
-
-def json_extract(obj, key):
-    """Recursively fetch values from nested JSON."""
-    arr = []
-
-    def extract(obj, arr, key):
-        """Recursively search for values of key in JSON tree."""
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                if isinstance(v, (dict, list)):
-                    extract(v, arr, key)
-                elif k == key:
-                    arr.append(v)
-        elif isinstance(obj, list):
-            for item in obj:
-                extract(item, arr, key)
-        return arr
-
-    values = extract(obj, arr, key)
-    return values
-
 #json holen
 url = 'https://wttr.in/Darmstadt?format=j1'
 r = requests.get(url)
 wttr=r.json()
+#print(wttr)
 
-#json in datei schreiben
+currentdate=None
 
-with open('data.json', 'w', encoding='utf-8') as f:
-    json.dump(wttr, f, ensure_ascii=False, indent=4)
+for key in wttr.keys():
+    if key == 'current_condition':
+        for j in wttr[key]:
+         if 'weatherDesc' in j :
+             pass
+             #print(f"{key}: {j['weatherDesc'][0]['value']}")
+    elif key == 'weather':
+     for j in wttr[key]:
+         if not currentdate:
+             currentdate=j['date']
+         if 'hourly' in j and currentdate != j['date'] :
+             tempc=""
+             humi=""
+             cor=""
+             wd=""
+             for i in j['hourly']:
+                 tempc+=f"{i['FeelsLikeC']}/"
+                 humi+=f"{i['humidity']}/"
+                 cor+=f"{i['chanceofrain']}/"
+                 wd+=f"{i['weatherDesc'][0]['value']}/"
+             print(f"{j['date']}: with temperature {tempc}°C, and {cor} % chance of rain and it's {wd}")
+                 
 
-
-
-
-
-
-temps=json_extract(wttr,'FeelsLikeC')
-print(temps)
-
-humidity=json_extract(wttr,'humidity')
-print('Feuchtigkeit: '+humidity[1]+'%')
